@@ -73,8 +73,6 @@ The admin panel is accessible at `/admin`. Log in with admin credentials to perf
 - `/api/playlists`: GET, POST
 - `/api/playlists/<int:playlist_id>`: GET, PUT, DELETE
 
-Explore the [API documentation](link_to_api_docs) for more details.
-
 ## Statistics
 
 View application statistics at `/api/statistics`.
