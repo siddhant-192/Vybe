@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <title>Login Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        .card-link:hover .card {
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .user-profile-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile-image {
+            border-radius: 50%;
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            margin-right: 90px;
+        }
+
+        .user-details {
+            font-size: 20px;
+        }
+
+        .fade-out {
+            animation: fadeOut 5s ease-in-out;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #songList {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body style="background-color:rgb(247, 247, 232);">
+
+    <nav class="navbar navbar-expand-lg sticky-top" style="background-color: rgb(121, 215, 255);">
+        <div class="container-fluid" style="padding: 5px 15px;">
+            <a class="navbar-brand fs-2 text" href="{{ url_for('user_home', user_name=user.Username) }}">
+                <img src="{{ url_for('static', filename='other_images/logo.png') }}" alt="Logo" width="56px"
+                    height="36px" class="d-inline-block align-text-top">
+                <b style="padding-left: 10px;">Vybe</b>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav ms-auto">
+                    <b><a class="nav-link fs-5 text" aria-current="page"
+                            href="{{ url_for('user_home', user_name=user.Username) }}">Home</a></b>
+                    <b><a class="nav-link active fs-5 text" href="#">Profile</a></b>
+                    <b><a class="nav-link fs-5 text"
+                            href="{{ url_for('search', user_name=user.Username) }}">Search</a></b>
+                    <b><a class="nav-link fs-5 text"
+                            href="{{ url_for('library', user_name=user.Username) }}">Library</a></b>
+                    <b><a class="nav-link fs-5 text" href="{{ url_for('login')}}">Sign Out</a></b>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% if profile_edit_success %}
+    <div class="alert alert-success fade-out" role="alert">
+        {{ profile_edit_success }}
+    </div>
+    {% endif %}
+    <div id="successBanner" class="alert alert-success" role="alert" style="display: none;">
+        Song removed from the playlist successfully!
+    </div>
+
+    <div class="container" style="margin-top: 70px;">
+        <nav class="navbar">
+            <div class="container-fluid">
+
+                <h1>Profile</h1>
+                <button type="button" class="btn btn-primary btn-dark" data-toggle="modal" data-target="#editFormModal">
+                    Edit Profile
+                </button>
+
+                <!-- Modal -->
+                <div class="modal" id="editFormModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Profile</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{{ url_for('update_profile', user_id=user.UserID) }}">
+                                    <div class="mb-3">
+                                        <label for="newInputName" class="form-label">Name</label>
+                                        <input type="text" class="form-control" id="newInputName" name="newInputName"
+                                            value="{{ user.Name }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="newInputPassword" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="newInputPassword"
+                                            name="newInputEmail">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="newInputLocation" class="form-label">Location</label>
+                                        <input type="text" class="form-control" id="newInputLocation"
+                                            name="newInputLocation" value="{{ user.Loc }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="newInputUserType" class="form-label">User Type</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="userTypeCreator"
+                                                id="userTypeUser" value="General" {% if user.UserType == 'General' %}
+                                                checked {% endif %}>
+                                            <label class="form-check-label" for="userTypeUser">General</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="userTypeCreator"
+                                                id="userTypeCreator" value="Creator" {% if user.UserType == 'Creator' %}
+                                                checked {% endif %}>
+                                            <label class="form-check-label" for="userTypeCreator">Creator</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </nav>
+        <div class="user-profile-container" style="margin-top: 50px;">
+            <img src="{{ url_for('static', filename='other_images/default_profile_pic.png') }}" alt="User Profile"
+                class="user-profile-image">
+            <div class="user-details">
+                <h2>{{ user.Name}}</h2>
+                <h5>@{{ user.Username }}</h5>
+                <p>Email: {{ user.Email}}</p>
+                <p>Location: {{ user.Loc }}</p>
+
+                <a class="" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
+                    aria-controls="offcanvasRight" style="color: black;">Following {{count_followed_artist}}</a>
+
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight"
+                    aria-labelledby="offcanvasRightLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasRightLabel">Following Artist</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <div class="container text-center">
+                            <div class="row gy-3">
+                                <div class="row"></div>
+                                {% if followed_artists %}
+                                {% for artist in followed_artists %}
+                                <div class="col-8 text-lg-start">
+                                    {{ artist['name'] }}
+                                </div>
+                                <div class="col-4">
+                                    <form method="post"
+                                        action="{{ url_for('unfollow_artist', user_id=user.UserID, artist_id=artist.id) }}">
+                                        <button type="submit" class="btn btn-danger">Unfollow</button>
+                                    </form>
+                                </div>
+
+                                {% endfor %}
+                                {% else %}
+                                <p>You are not following any artists yet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 style="margin: 30px 0;">Recent Playlist</h2>
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#playlistFormModal"
+                    data-user-id="{{ user.UserID }}">
+                    New Playlist
+                </button>
+
+                <!-- Playlist Form Modal -->
+                <div class="modal fade" id="playlistFormModal" tabindex="-1" aria-labelledby="playlistFormModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="playlistFormModalLabel">New Playlist</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Form for creating a new playlist -->
+                                <form action="{{ url_for('create_playlist', user_id=user.UserID) }}" method="post">
+                                    <div class="mb-3">
+                                        <label for="playlistName" class="form-label">Playlist Name</label>
+                                        <input type="text" class="form-control" id="playlistName" name="playlistName"
+                                            required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="playlistDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="playlistDescription"
+                                            name="playlistDescription" rows="3"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Create Playlist</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row gx-5 text-center">
+                <div class="col-12">
+                    <div class="row">
+                        {% for playlist in playlists %}
+                        <div class="col-3">
+                            <a href="#" class="card-link" data-bs-toggle="offcanvas"
+                                data-bs-target="#playlistOffCanvas{{ playlist.id }}">
+                                <div class="card" style="width: 18rem;">
+                                    {% set random_image_index = range(1, 8) | random %}
+                                    <img src="{{ url_for('static', filename='static_playlist_images/user_playlist' ~ random_image_index ~ '.jpg') }}"
+                                        class="card-img-top" alt="..."
+                                        style="width: 100%; height: 200px; object-fit: cover;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ playlist.name }}</h5>
+                                        <p class="card-title">{{ playlist.description }}</h5>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Off-canvas for Playlist -->
+                        <div class="offcanvas offcanvas-end" tabindex="-1" id="playlistOffCanvas{{ playlist['id'] }}"
+                            aria-labelledby="playlistOffCanvasLabel{{ playlist['id'] }}">
+                            <div class="offcanvas-header">
+                                <h5 class="offcanvas-title" id="playlistOffCanvasLabel{{ playlist['id'] }}">Playlist
+                                    Songs</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="offcanvas-body">
+                                <div class="container text-center">
+                                    <div class="row gy-3">
+                                        {% for song_id, song_name in playlist['songs'] %}
+                                        <div class="col-8 text-lg-start">
+                                            {{ song_name }}
+                                        </div>
+                                        <div class="col-4">
+                                            <form id="removeForm{{ playlist['id'] }}{{ song_id }}"
+                                                data-playlist-id="{{ playlist['id'] }}" data-song-id="{{ song_id }}">
+                                                <button type="button"
+                                                    class="btn btn-danger remove-button">Remove</button>
+                                            </form>
+                                        </div>
+                                        {% endfor %}
+                                        {% if not playlist['songs'] %}
+                                        <p>This playlist has no songs.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="offcanvas-footer"
+                                style="position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);">
+                                <button type="button" class="btn btn-danger delete-playlist-button"
+                                    data-playlist-id="{{ playlist['id'] }}">
+                                    Delete Playlist
+                                </button>
+                            </div>
+                        </div>
+                        <!-- End Off-canvas for Playlist -->
+
+
+
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="container">
+            <h2 style="margin: 30px 0;">Following Artists</h2>
+            <div class="row gx-5 text-center">
+                <div class="col-12">
+                    <div class="row">
+                        {% if followed_artists %}
+                        {% for artist in followed_artists %}
+                        {% if loop.index <= 4 %}
+                        <div class="col-3">
+                            <a href="{{ url_for('artist_page', artist_name=artist.name, user_name=user_name, user=user)}}"
+                                class="card-link">
+                                <div class="card" style="width: 18rem;">
+                                    <img src="{{ url_for('static', filename='artist_images/' + artist.id|string + '.jpg') }}"
+                                        class="card-img-top" alt="...">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ artist.name }}</h5>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        <p>You are not following any artists yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user.UserType == 'Creator' %}
+
+        <!-- My Songs Section -->
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 style="margin: 30px 0;">My Songs</h2>
+                <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#addSongModal">
+                    Add Song
+                </button>
+            </div>
+
+            <!-- Add Song Modal -->
+            <div class="modal fade" id="addSongModal" tabindex="-1" role="dialog" aria-labelledby="addSongModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addSongModalLabel">Add Song</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addSongForm">
+                                <div class="mb-3">
+                                    <label for="songName" class="form-label">Song Name</label>
+                                    <input type="text" class="form-control" id="songName" name="songName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="songDuration" class="form-label">Duration</label>
+                                    <input type="text" class="form-control" id="songDuration" name="songDuration"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="songLyrics" class="form-label">Lyrics</label>
+                                    <textarea class="form-control" id="songLyrics" name="songLyrics" rows="5"
+                                        required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="releaseDate" class="form-label">Release Date</label>
+                                    <input type="date" class="form-control" id="releaseDate" name="releaseDate"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="albumName" class="form-label">Album Name</label>
+                                    <input type="text" class="form-control" id="albumName" name="albumName" required>
+                                </div>
+                                <button type="button" class="btn btn-primary" id="addSongBtn">Add Song</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Display songs here -->
+            <div class="list-group">
+                {% for song in creator_songs %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">{{ song.name }}</h5>
+                        <p class="mb-1">{{ song.duration }}</p>
+                    </div>
+                    <div class="d-flex">
+                        <a href="{{ url_for('song_page', song_name=song.name, user_name=user_name)}}"
+                            class="btn btn-primary btn-sm mr-2" style="margin-right: 15px;">View</a>
+                        <button type="button" class="btn btn-danger btn-sm"
+                            onclick="deleteSong('{{ song.id }}')">Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if creator_songs|length == 0 %}
+                <p class="text-muted">No Songs</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- My Albums Section -->
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 style="margin: 30px 0;">My Albums</h2>
+                <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#addAlbumModal">
+                    Add Album
+                </button>
+            </div>
+
+            <!-- Add Album Modal -->
+            <div class="modal fade" id="addAlbumModal" tabindex="-1" role="dialog" aria-labelledby="addAlbumModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addAlbumModalLabel">Add Album</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Form for adding an album -->
+                            <form id="addAlbumForm">
+                                <div class="mb-3">
+                                    <label for="newAlbumName" class="form-label">Album Name</label>
+                                    <input type="text" class="form-control" id="newAlbumName" name="newAlbumName"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="albumGenre" class="form-label">Genre</label>
+                                    <input type="text" class="form-control" id="albumGenre" name="albumGenre" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="albumReleaseDate" class="form-label">Release Date</label>
+                                    <input type="date" class="form-control" id="albumReleaseDate"
+                                        name="albumReleaseDate" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Album</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Display albums here -->
+            <div class="list-group">
+                {% for album in creator_albums %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">{{ album.name }}</h5> 
+                        <p class="mb-1">{{ album.genre }}</p>
+                    </div>
+                    <div class="d-flex">
+                        <a href="{{ url_for('album_page', album_id=album.id, user_name=user_name)}}"
+                            class="btn btn-primary btn-sm mr-2" style="margin-right: 15px;">View</a>
+                        <button type="button" class="btn btn-danger btn-sm"
+                            onclick="deleteAlbum('{{ album.id }}')">Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if creator_albums|length == 0 %}
+                <p class="text-muted">No Albums</p>
+                {% endif %}
+            </div>
+
+
+        </div>
+        {% endif %}
+
+    </div>
+    </div>
+    </div>
+
+
+
+    <footer class="text-center text-lg-start text-muted"
+        style="margin-top: 30px; background-color: rgb(206, 206, 206);">
+        <!-- Section: Social media -->
+        <section class="d-flex justify-content-center justify-content-lg-between p-4 border-bottom">
+            <!-- Left -->
+            <div class="me-5 d-none d-lg-block">
+                <span>Get connected with us on social networks:</span>
+            </div>
+            <!-- Left -->
+
+            <!-- Right -->
+            <div>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-github"></i>
+                </a>
+            </div>
+            <!-- Right -->
+        </section>
+        <!-- Section: Social media -->
+
+        <!-- Section: Links  -->
+        <section class="">
+            <div class="container text-center text-md-start mt-5">
+                <!-- Grid row -->
+                <div class="row mt-3">
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+                        <!-- Content -->
+                        <h6 class="text-uppercase fw-bold mb-4">
+                            <i class="fas fa-gem me-3"></i>Vybe
+                        </h6>
+                        <p>
+                            Vybe is not just another music streaming platform; it's a true game-changer in the world
+                            of
+                            music consumption.
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold mb-4">
+                            Useful links
+                        </h6>
+                        <p>
+                            <a href="#!" class="text-reset">Home</a>
+                        </p>
+                        <p>
+                            <a href="{{ url_for('aboutus') }}" class="text-reset">About Us</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-reset">Contact Us</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold mb-4">Contact</h6>
+                        <p><i class="fas fa-home me-3"></i> Mumbai, India</p>
+                        <p>
+                            <i class="fas fa-envelope me-3"></i>
+                            info@example.com
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+                </div>
+                <!-- Grid row -->
+            </div>
+        </section>
+
+        <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
+            © 2023 Copyright:
+            <a class="text-reset fw-bold" href="#">Siddhant Mantri</a>
+        </div>
+
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous">
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $(".remove-button").click(function () {
+                var playlistId = $(this).closest("form").data("playlist-id");
+                var songId = $(this).closest("form").data("song-id");
+
+                $.ajax({
+                    type: "POST",
+                    url: `/remove_from_playlist/${playlistId}/${songId}`,
+                    success: function (response) {
+                        // Handle success, e.g., remove the song from the UI
+                        $("#successBanner").show(); // Show the success banner
+                        location.reload(); // Refresh the page
+                    },
+                    error: function (error) {
+                        // Handle the error response, if needed
+                        console.error("Error removing song from playlist");
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function () {
+
+            $(document).ready(function () {
+                // Existing code for Remove button
+
+                // Updated code for Delete Playlist button
+                $(".delete-playlist-button").click(function () {
+                    var playlistId = $(this).data("playlist-id");
+
+                    if (confirm("Are you sure you want to delete this playlist?")) {
+                        // Perform AJAX request to delete the playlist
+                        $.ajax({
+                            type: "POST",
+                            url: `/delete_playlist/${playlistId}`,
+                            success: function (response) {
+                                // Handle success, e.g., redirect to another page or show a success message
+                                alert("Playlist deleted successfully!");
+                                location.reload(); // Refresh the page
+                            },
+                            error: function (error) {
+                                // Handle the error response, if needed
+                                console.error("Error deleting playlist");
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function () {
+            // Attach an event listener to the Add Song button
+            $("#addSongBtn").click(function () {
+                // Collect data from the form
+                var songData = {
+                    name: $("#songName").val(),
+                    duration: $("#songDuration").val(),
+                    lyrics: $("#songLyrics").val(),
+                    releaseDate: $("#releaseDate").val(),
+                    albumName: $("#albumName").val()
+                };
+
+                // Perform an AJAX request to the add_song_by_artist route
+                $.ajax({
+                    type: "POST",
+                    url: "/add_song_by_artist?user_name={{ user_name }}", // Replace {{ user_name }} with the actual user name
+                    contentType: "application/json",
+                    data: JSON.stringify(songData),
+                    success: function (response) {
+                        // Handle success, e.g., show a success message
+                        alert("Song added successfully!");
+                        // Reload the page to reflect changes
+                        location.reload();
+                    },
+                    error: function (error) {
+                        // Handle the error response, if needed
+                        console.error("Error adding song");
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function () {
+            // Submit the add album form
+            $("#addAlbumForm").submit(function (event) {
+                event.preventDefault();
+
+                // Get input values
+                var newAlbumName = $("#newAlbumName").val();
+                console.log("Album Name:", newAlbumName); // Add this line for debugging
+                var albumGenre = $("#albumGenre").val();
+                var albumReleaseDate = $("#albumReleaseDate").val();
+
+                // Get the current username from the URL
+                var username = window.location.pathname.split("/")[1];
+
+                // Perform AJAX request to add album
+                $.ajax({
+                    type: "POST",
+                    url: `/add_album_by_artist?user_name=${username}`,
+                    data: JSON.stringify({
+                        name: newAlbumName,
+                        genre: albumGenre,
+                        releaseDate: albumReleaseDate
+                    }),
+                    contentType: "application/json",
+                    success: function (response) {
+                        // Handle success, e.g., show a success message or refresh the page
+                        alert("Album added successfully!");
+                        location.reload(); // Refresh the page
+                    },
+                    error: function (error) {
+                        // Handle the error response, if needed
+                        console.error("Error adding album");
+                    }
+                });
+            });
+        });
+
+        function deleteAlbum(albumId) {
+            // Confirm deletion
+            if (confirm("Are you sure you want to delete this album?")) {
+                // Send AJAX request to the server
+                fetch('/delete_album_by_artist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            albumId: albumId
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Handle the JSON response
+                        alert(data.message); // Display a message or handle as needed
+                        // Reload the page
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        }
+
+        function deleteSong(songId) {
+            // Confirm deletion
+            if (confirm("Are you sure you want to delete this song?")) {
+                // Send AJAX request to the server
+                fetch('/delete_song_by_artist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            songId: songId
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Handle the JSON response
+                        alert(data.message); // Display a message or handle as needed
+                        // Reload the page
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>

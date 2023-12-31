@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <title>Login Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+    <style>
+        .card-link:hover .card {
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body style="background-color:rgb(247, 247, 232);">
+
+    <nav class="navbar navbar-expand-lg sticky-top" style="background-color: rgb(121, 215, 255);">
+        <div class="container-fluid" style="padding: 5px 15px;">
+            <a class="navbar-brand fs-2 text" href="{{ url_for('user_home', user_name=user.Username) }}">
+                <img src="{{ url_for('static', filename='other_images/logo.png') }}" alt="Logo" width="56px" height="36px"
+                    class="d-inline-block align-text-top">
+                <b style="padding-left: 10px;">Vybe</b>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav ms-auto">
+                    <b><a class="nav-link active fs-5 text" aria-current="page" href="#">Home</a></b>
+                    <b><a class="nav-link fs-5 text" href="{{ url_for('user_profile', user_name=user.Username) }}">Profile</a></b>
+                    <b><a class="nav-link fs-5 text" href="{{ url_for('search', user_name=user.Username) }}">Search</a></b>
+                    <b><a class="nav-link fs-5 text" href="{{ url_for('library', user_name=user.Username) }}">Library</a></b>
+                    <b><a class="nav-link fs-5 text" href="{{ url_for('login')}}">Sign Out</a></b>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 style="margin: 30px 0;">Hottest</h2>
+        <div class="row gx-5 text-center">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-3">
+                        <a href="#" class="card-link">
+                            <div class="card" style="width: 18rem;">
+                                <img src="{{ url_for('static', filename='static_playlist_images/playlist1.jpg') }}" class="card-img-top" alt="...">
+                                <div class="card-body">
+                                    <h5 class="card-title">Indian Hits</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-3">
+                        <a href="#" class="card-link">
+                            <div class="card" style="width: 18rem;">
+                                <img src="{{ url_for('static', filename='static_playlist_images/playlist2.jpg') }}"
+                                    class="card-img-top" alt="...">
+                                <div class="card-body">
+                                    <h5 class="card-title">International Hits</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-3">
+                        <a href="#" class="card-link">
+                            <div class="card" style="width: 18rem;">
+                                <img src="{{ url_for('static', filename='static_playlist_images/playlist3.jpg') }}"
+                                    class="card-img-top" alt="...">
+                                <div class="card-body">
+                                    <h5 class="card-title">Pop Hits</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-3">
+                        <a href="#" class="card-link">
+                            <div class="card" style="width: 18rem;">
+                                <img src="{{ url_for('static', filename='static_playlist_images/playlist4.jpg') }}"
+                                    class="card-img-top" alt="...">
+                                <div class="card-body">
+                                    <h5 class="card-title">Punjabi Hits</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if random_artists %}
+    <h2 style="margin: 30px 0;">Recommended</h2>
+
+    <div class="row gx-5 gy-5 text-center">
+        {% for artist in random_artists %}
+            <div class="col-3">
+                <a href="{{ url_for('artist_page', artist_name=artist.ArtistName, user_name=user.Username)}}" class="card-link">
+                    <div class="card" style="width: 18rem;">
+                        {% set artist_image_path = 'artist_images/' + artist.ArtistID|string + '.jpg' %}
+                        {% set artist_image_url = url_for('static', filename=artist_image_path) %}
+                        {% set default_img_url = url_for('static', filename='artist_images/0.jpg') %}
+
+                        <img src="{{ artist_image_url }}" onerror="this.src='{{ default_img_url }}';" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ artist.ArtistName }}</h5>
+                            <p class="card-text">{{ artist.Description }}</p>
+                            <!-- Add more information if needed -->
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+    </div>
+
+
+    <footer class="text-center text-lg-start text-muted"
+        style="margin-top: 30px; background-color: rgb(206, 206, 206);">
+        <!-- Section: Social media -->
+        <section class="d-flex justify-content-center justify-content-lg-between p-4 border-bottom">
+            <!-- Left -->
+            <div class="me-5 d-none d-lg-block">
+                <span>Get connected with us on social networks:</span>
+            </div>
+            <!-- Left -->
+
+            <!-- Right -->
+            <div>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="" class="me-4 text-reset">
+                    <i class="fab fa-github"></i>
+                </a>
+            </div>
+            <!-- Right -->
+        </section>
+        <!-- Section: Social media -->
+
+        <!-- Section: Links  -->
+        <section class="">
+            <div class="container text-center text-md-start mt-5">
+                <!-- Grid row -->
+                <div class="row mt-3">
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+                        <!-- Content -->
+                        <h6 class="text-uppercase fw-bold mb-4">
+                            <i class="fas fa-gem me-3"></i>Vybe
+                        </h6>
+                        <p>
+                            Vybe is not just another music streaming platform; it's a true game-changer in the world of
+                            music consumption.
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold mb-4">
+                            Useful links
+                        </h6>
+                        <p>
+                            <a href="#!" class="text-reset">Home</a>
+                        </p>
+                        <p>
+                            <a href="{{ url_for('aboutus') }}" class="text-reset">About Us</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-reset">Contact Us</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold mb-4">Contact</h6>
+                        <p><i class="fas fa-home me-3"></i> Mumbai, India</p>
+                        <p>
+                            <i class="fas fa-envelope me-3"></i>
+                            info@example.com
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+                </div>
+                <!-- Grid row -->
+            </div>
+        </section>
+
+        <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
+            © 2023 Copyright:
+            <a class="text-reset fw-bold" href="#">Siddhant Mantri</a>
+        </div>
+
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous">
+    </script>
+
+</body>
+
+</html>
